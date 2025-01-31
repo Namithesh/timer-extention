@@ -22,7 +22,6 @@
             width: 200px;
             height: 200px;
             background: white;
-            border: 10px solid black;
             border-radius: 20px;
             display: flex;
             justify-content: center;
@@ -36,10 +35,18 @@
             height: 90%;
             background: red;
             border-radius: 50%;
-            border: 2px solid black;
             display: flex;
             justify-content: center;
             align-items: center;
+        }
+
+        /* Center Dot */
+        .center-dot {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: black;
+            border-radius: 50%;
         }
 
         /* Minute Markings */
@@ -84,7 +91,9 @@
 
 <body>
     <div class="timer">
-        <div class="clock-face"></div>
+        <div class="clock-face">
+            <div class="center-dot"></div>
+        </div>
         <div class="markings">
             <span>12</span>
             <span>3</span>
