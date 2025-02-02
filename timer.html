@@ -4,52 +4,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Timer Design</title>
+    <title>Time timer</title>
     <style>
-        /* Center the Timer in the Middle of the Screen */
         body {
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             height: 100vh;
             margin: 0;
-            background-color: #f0f0f0;
+            background-color:white;
         }
 
-        /* Timer Container */
         .timer {
             position: relative;
-            width: 200px;
-            height: 200px;
+            width: 300px;
+            height: 300px;
             background: white;
-            border-radius: 20px;
+
             display: flex;
             justify-content: center;
             align-items: center;
+            user-select: none;
         }
 
-        /* Clock Face */
         .clock-face {
             position: absolute;
             width: 90%;
             height: 90%;
-            background: red;
+            background: white;
             border-radius: 50%;
+            border: 2px solid black;
             display: flex;
             justify-content: center;
             align-items: center;
         }
 
-        /* Center Dot */
+        .red-timer {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: conic-gradient(red 0deg, red 360deg, white 360deg);
+            border-radius: 50%;
+            transition: background 0.1s linear;
+        }
+
         .center-dot {
             position: absolute;
             width: 20px;
             height: 20px;
             background: black;
             border-radius: 50%;
+            z-index: 2;
         }
 
-        /* Minute Markings */
         .markings {
             position: absolute;
             width: 100%;
@@ -58,49 +66,138 @@
 
         .markings span {
             position: absolute;
-            font-size: 18px;
+            font-size: 15px;
             font-weight: bold;
             transform: translate(-50%, -50%);
+            color: #000000;
         }
 
+        /* Position markings at every 15-minute interval (90° each) */
         .markings span:nth-child(1) {
-            top: 0%;
+            top: -10%;
             left: 50%;
-            transform: translate(-50%, -50%);
+            transform: translate(-50%, 0);
+            content: '60';
         }
 
         .markings span:nth-child(2) {
             top: 50%;
-            right: 0%;
-            transform: translate(50%, -50%);
+            right: -10%;
+            transform: translateY(-50%);
+            content: '15';
         }
 
         .markings span:nth-child(3) {
-            bottom: 0%;
+            bottom: -10%;
             left: 50%;
-            transform: translate(-50%, 50%);
+            transform: translate(-50%, 0);
+            content: '30';
         }
 
         .markings span:nth-child(4) {
             top: 50%;
-            left: 0%;
-            transform: translate(-50%, -50%);
+            left: -10%;
+            transform: translateY(-50%);
+            content: '45';
+        }
+
+        /* Add intermediate markings at 7.5-minute intervals (45° each) */
+        .markings span:nth-child(5) {
+            top: 9%;
+            right: 9%;
+            content: '5';
+        }
+
+        .markings span:nth-child(6) {
+            bottom: 3%;
+            right: 3%;
+            content: '10';
+        }
+
+        .markings span:nth-child(7) {
+            bottom: 6%;
+            left: 6%;
+            content: '20';
+        }
+
+        .markings span:nth-child(8) {
+            top: 10%;
+            left: 10%;
+            content: '50';
         }
     </style>
 </head>
 
 <body>
-    <div class="timer">
+    <div class="timer" id="timer">
         <div class="clock-face">
+            <div class="red-timer" id="red-timer"></div>
             <div class="center-dot"></div>
-        </div>
-        <div class="markings">
-            <span>12</span>
-            <span>3</span>
-            <span>6</span>
-            <span>9</span>
+            <div class="markings">
+                <span>60</span>
+                <span>15</span>
+                <span>30</span>
+                <span>45</span>
+                <span>5</span>
+                <span>20</span>
+                <span>40</span>
+                <span>50</span>
+            </div>
         </div>
     </div>
+
+    <script>
+        let redTimer = document.getElementById("red-timer");
+        let timer = document.getElementById("timer");
+        let isDragging = false;
+        let duration = 3600; // 1 hour in seconds
+        let timeLeft = duration;
+
+        function updateTimerDisplay(time) {
+            let angle = (time / duration) * 360;
+            redTimer.style.background = `conic-gradient(red 0deg, red ${angle}deg, white ${angle}deg, white 360deg)`;
+        }
+
+        timer.addEventListener("mousedown", (e) => {
+            isDragging = true;
+            document.addEventListener("mousemove", onDrag);
+            document.addEventListener("mouseup", stopDrag);
+        });
+
+        function onDrag(event) {
+            if (!isDragging) return;
+            let rect = timer.getBoundingClientRect();
+            let centerX = rect.left + rect.width / 2;
+            let centerY = rect.top + rect.height / 2;
+            let x = event.clientX - centerX;
+            let y = event.clientY - centerY;
+            let angle = Math.atan2(y, x) * (180 / Math.PI) + 90;
+            if (angle < 0) angle += 360;
+            timeLeft = Math.round((angle / 360) * duration);
+            updateTimerDisplay(timeLeft);
+        }
+
+        function stopDrag() {
+            isDragging = false;
+            document.removeEventListener("mousemove", onDrag);
+            document.removeEventListener("mouseup", stopDrag);
+            startCountdown(timeLeft);
+        }
+
+        function startCountdown(time) {
+            let startTime = Date.now();
+            let endTime = startTime + time * 1000;
+            function updateCountdown() {
+                let now = Date.now();
+                let remaining = Math.max(0, (endTime - now) / 1000);
+                updateTimerDisplay(remaining);
+                if (remaining > 0) {
+                    requestAnimationFrame(updateCountdown);
+                }
+            }
+            updateCountdown();
+        }
+    </script>
 </body>
 
 </html>
